@@ -10,6 +10,8 @@
 
 #define RENDER_TAG "PT_RENDER"
 
+#undef DEPTH_TEST
+
 Render::Render() {
 
 }
@@ -69,7 +71,9 @@ void Render::initializeEGL() {
     const EGLint configAttributes[] = {
             EGL_SURFACE_TYPE,    /* = */ EGL_WINDOW_BIT,
             EGL_RENDERABLE_TYPE, /* = */ 0,
+#ifdef DEPTH_TEST
             EGL_DEPTH_SIZE,      /* = */ 24,
+#endif
             EGL_BLUE_SIZE,       /* = */ 8,
             EGL_GREEN_SIZE,      /* = */ 8,
             EGL_RED_SIZE,        /* = */ 8,
@@ -127,10 +131,9 @@ void Render::initializeGL() {
     glEnable(GL_CULL_FACE);
     glFrontFace(GL_CCW);
 
-    // TODO we may disable depth test for current "walls & cube" scene
-    // we can simply draw walls first and cube afterwards, and instead of depth test
-    // we'll use culling
+#ifdef DEPTH_TEST
     glEnable(GL_DEPTH_TEST);
+#endif
 
     // shaders
 
@@ -294,10 +297,14 @@ void Render::updateViewMatrix() {
     cameraAngleX = std::min(std::max(0.1f, cameraAngleX), 3.13f);
 
     vec3 direction;
-    // TODO use sincosf
-    direction.x = sinf(cameraAngleX) * sinf(cameraAngleZ);
-    direction.y = sinf(cameraAngleX) * cosf(cameraAngleZ);
-    direction.z = cosf(cameraAngleX);
+
+    float cameraAngleXsin, cameraAngleXcos, cameraAngleZsin, cameraAngleZcos;
+    sincosf(cameraAngleX, &cameraAngleXsin, &cameraAngleXcos);
+    sincosf(cameraAngleZ, &cameraAngleZsin, &cameraAngleZcos);
+
+    direction.x = cameraAngleXsin * cameraAngleZsin;
+    direction.y = cameraAngleXsin * cameraAngleZcos;
+    direction.z = cameraAngleXcos;
 
     const vec3 up = { 0, 0, 1 };
 

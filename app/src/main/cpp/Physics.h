@@ -89,6 +89,8 @@ public:
     const Cube* getCube();
     const Cube* getWalls();
 
+    void setGravity(vec3 gravity);
+
     void step(double dt);
 };
 

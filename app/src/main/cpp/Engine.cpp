@@ -8,6 +8,7 @@
 #include "AssetManager.h"
 #include "Physics.h"
 #include "Render.h"
+#include "InputManager.h"
 
 extern "C" {
 #include "generalUtils.h"
@@ -82,7 +83,7 @@ void Engine::threadLoop() {
 
         my_assert(started);
 
-        // TODO apply user input
+        InputManager::getInstance().applyUserInput();
         Physics::getInstance().step(FRAME_TIME);
         Render::getInstance().draw();
 
@@ -143,13 +144,17 @@ void Engine::processEvent(EngineEvent& event) {
             AssetManager::getInstance().initialize(initStruct->nativeAssetManager);
             Physics::getInstance().initialize();
             Render::getInstance().initialize();
+            InputManager::getInstance().initialize();
 
             delete initStruct;
 
             break;
         }
         case Finalize:
+            InputManager::getInstance().finalize();
             Render::getInstance().finalize();
+            Physics::getInstance().finalize();
+            AssetManager::getInstance().finalize();
             finalized = true;
             break;
         case Start:
