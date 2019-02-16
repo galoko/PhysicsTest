@@ -1,0 +1,29 @@
+precision lowp float;
+precision lowp sampler2D;
+
+attribute vec3 vertexPosition;
+attribute vec3 vertexNormal;
+attribute vec2 vertexTexCoord;
+
+varying vec3 cameraNormal;
+varying vec3 cameraLightDirection;
+varying vec2 texCoord;
+
+uniform mat4 projection;
+uniform mat4 view;
+
+uniform vec3 size;
+uniform mat3 rotation;
+uniform vec3 translation;
+
+void main()
+{
+    vec3 worldVertexPosition = (rotation * (vertexPosition * size)) + translation;
+
+    gl_Position = projection * view * vec4(worldVertexPosition, 1);
+
+    cameraLightDirection = -(view * vec4(worldVertexPosition, 1)).xyz;
+    cameraNormal = (view * vec4(rotation * vertexNormal, 0)).xyz;
+	
+	texCoord = vertexTexCoord;
+}

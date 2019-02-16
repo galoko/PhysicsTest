@@ -1,0 +1,1 @@
+python C:\Users\win10\AppData\Local\Android\Sdk\ndk-bundle\build\tools\make_standalone_toolchain.py --verbose  --arch arm --api 16 --stl gnustl --install-dir=./toolchain
