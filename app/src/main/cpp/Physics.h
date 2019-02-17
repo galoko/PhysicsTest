@@ -35,7 +35,7 @@ public:
 
 class PhysicsData {
 private:
-    const float RESTITUTION = 0.0f;
+    const float RESTITUTION = 1.0f;
     const float FRICTION = 1.0f;
 
     Cube *cube, *walls;
@@ -46,7 +46,6 @@ private:
     mat3 localInvInertiaTensor, worldInvInertiaTensor;
 
     void updateInertiaTensor();
-    bool checkCollision(vec3 point, vec3 leftBottomNear, vec3 rightTopFar, vec3& normal);
 public:
     PhysicsData(Cube* cube, Cube* walls, float mass);
 

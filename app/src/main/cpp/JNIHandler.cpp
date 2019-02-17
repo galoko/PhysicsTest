@@ -71,7 +71,7 @@ extern "C" JNIEXPORT void JNICALL Java_com_example_physicstest_JNIHandler_setOut
         JNIEnv *env, jclass /*this*/, jobject surface) {
     try {
         COFFEE_TRY() {
-            ANativeWindow *window = ANativeWindow_fromSurface(env, surface);
+            ANativeWindow *window = surface ? ANativeWindow_fromSurface(env, surface) : nullptr;
             Engine::getInstance().setOutputWindow(window);
         } COFFEE_CATCH() {
             coffeecatch_throw_exception(env);

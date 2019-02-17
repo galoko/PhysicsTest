@@ -9,11 +9,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Toast;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.StringWriter;
-
 public class MainActivity extends Activity implements SurfaceHolder.Callback {
 
     private AssetManager assetManager;
@@ -21,6 +16,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     static {
         System.loadLibrary("main");
     }
+
+    SurfaceHolder holder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,12 +50,14 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     protected void onResume() {
         super.onResume();
         JNIHandler.start();
+        setOutputSurfaceFromHolder();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         JNIHandler.stop();
+        JNIHandler.setOutputSurface(null);
     }
 
     @Override
@@ -73,13 +72,21 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     }
 
     public void surfaceCreated(SurfaceHolder holder) {
+        this.holder = holder;
+        setOutputSurfaceFromHolder();
     }
 
     public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
-        JNIHandler.setOutputSurface(holder.getSurface());
+        this.holder = holder;
+        setOutputSurfaceFromHolder();
     }
 
     public void surfaceDestroyed(SurfaceHolder holder) {
-        JNIHandler.setOutputSurface(null);
+        this.holder = null;
+        setOutputSurfaceFromHolder();
+    }
+
+    private void setOutputSurfaceFromHolder() {
+        JNIHandler.setOutputSurface(holder != null ? holder.getSurface() : null);
     }
 }

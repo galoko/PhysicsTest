@@ -6,6 +6,7 @@
 #include "exceptionUtils.h"
 
 #include "Physics.h"
+#include "Render.h"
 
 #define INPUT_MANAGER_TAG "PT_INPUT_MANAGER"
 
@@ -69,12 +70,15 @@ void InputManager::applyUserInput() {
 
     vec3 rotatedVec = sensorRotation * sensorDataFilter;
 
-    rotatedVec.x = fabs(rotatedVec.x) > 5 ? sign(rotatedVec.x) * 9.8f : 0;
-    rotatedVec.y = fabs(rotatedVec.y) > 5 ? sign(rotatedVec.y) * 9.8f : 0;
-    rotatedVec.z = fabs(rotatedVec.z) > 5 ? sign(rotatedVec.z) * 9.8f : 0;
+    const float threshold = 3;
 
-    print_log(ANDROID_LOG_INFO, INPUT_MANAGER_TAG, "sensor %f %f %f",
-              rotatedVec.x, rotatedVec.y, rotatedVec.z);
+    rotatedVec.x = fabs(rotatedVec.x) >= threshold ? sign(rotatedVec.x) * 9.8f : 0;
+    rotatedVec.y = fabs(rotatedVec.y) >= threshold ? sign(rotatedVec.y) * 9.8f : 0;
+    rotatedVec.z = fabs(rotatedVec.z) >= threshold ? sign(rotatedVec.z) * 9.8f : 0;
+
+    // rotatedVec = mat3(rotate(mat4(1.0f), radians(45.0f), vec3(0, 0, 1))) * rotatedVec;
+
+    // print_log(ANDROID_LOG_INFO, INPUT_MANAGER_TAG, "%f %f %f", rotatedVec.x, rotatedVec.y, rotatedVec.z);
 
     Physics::getInstance().setGravity(rotatedVec);
 }

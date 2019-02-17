@@ -54,12 +54,16 @@ void Render::initializeWindow() {
 
     initializeEGL();
     initializeGL();
+
+    print_log(ANDROID_LOG_INFO, RENDER_TAG, "Render is initialized");
 }
 
 void Render::finalizeWindow() {
 
     finalizeGL();
     finalizeEGL();
+
+    print_log(ANDROID_LOG_INFO, RENDER_TAG, "Render is finalized");
 }
 
 void Render::initializeEGL() {
@@ -120,8 +124,17 @@ void Render::initializeEGL() {
 
 void Render::finalizeEGL() {
 
-    // TODO
-    throw runtime_error("not done");
+    eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+    eglDestroyContext(display, context);
+    eglDestroySurface(display, surface);
+    eglTerminate(display);
+
+    display = EGL_NO_DISPLAY;
+    surface = EGL_NO_SURFACE;
+    context = EGL_NO_CONTEXT;
+
+    width = 0;
+    height = 0;
 }
 
 void Render::initializeGL() {
@@ -161,7 +174,7 @@ void Render::initializeGL() {
     glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &res);
     my_assert(res == GL_TRUE);
 
-    GLuint program = glCreateProgram();
+    this->program = glCreateProgram();
     glAttachShader(program, vertexShader);
     glAttachShader(program, fragmentShader);
     glLinkProgram(program);
@@ -275,8 +288,17 @@ void Render::initializeGL() {
 
 void Render::finalizeGL() {
 
-    // TODO
-    throw runtime_error("not done");
+    glDeleteProgram(program);
+    program = 0;
+
+    glDeleteTextures(1, &cubeTexture);
+    cubeTexture = 0;
+
+    glDeleteTextures(1, &wallTexture);
+    wallTexture = 0;
+
+    glDeleteBuffers(1, &cubeBuffer);
+    cubeBuffer = 0;
 }
 
 void Render::updateProjectionMatrix() {
@@ -338,6 +360,9 @@ void Render::drawCube(const Cube* cube, GLuint tex, GLenum cullMode) {
 }
 
 void Render::draw() {
+
+    if (this->window == nullptr)
+        return;
 
     // cameraPosition.z = Physics::getInstance().getCube()->getPosition().z;
     lookAtPoint(Physics::getInstance().getCube()->getPosition());

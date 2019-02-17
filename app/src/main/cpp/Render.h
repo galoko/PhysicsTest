@@ -44,6 +44,8 @@ private:
     void initializeEGL();
     void finalizeEGL();
 
+    GLuint program;
+
     GLuint cubeTexture, wallTexture, cubeBuffer;
 
     GLint projectionID, viewID, sizeID, translationID, rotationID, texID;

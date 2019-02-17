@@ -26,6 +26,7 @@ add_library(main SHARED
     src/main/cpp/AssetManager.cpp
     src/main/cpp/Render.cpp
     src/main/cpp/Physics.cpp
+    src/main/cpp/InputManager.cpp
     src/main/cpp/Engine.cpp)
 
 target_include_directories(main PRIVATE
