@@ -5,9 +5,9 @@ import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Toast;
+import android.os.PowerManager;
+import 	android.os.PowerManager.WakeLock;
+import android.content.Context;
 
 public class MainActivity extends Activity implements SurfaceHolder.Callback {
 
@@ -29,15 +29,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
 
         SurfaceView surfaceView = (SurfaceView)findViewById(R.id.surfaceview);
         surfaceView.getHolder().addCallback(this);
-
-        // just a test
-        surfaceView.setOnClickListener(new OnClickListener() {
-            public void onClick(View view) {
-                Toast toast = Toast.makeText(MainActivity.this,
-                        "Java is working!",
-                        Toast.LENGTH_LONG);
-                toast.show();
-            }});
     }
 
     @Override

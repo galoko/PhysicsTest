@@ -63,12 +63,10 @@ void InputManager::applyUserInput() {
     float a = SENSOR_FILTER_ALPHA;
     while (ASensorEventQueue_getEvents(accelerometerEventQueue, &event, 1) > 0) {
         vec3 eventAcceleration = vec3(event.acceleration.x, event.acceleration.y, event.acceleration.z);
-
-        sensorDataFilter = a * eventAcceleration + (1.0f - a) * sensorDataFilter;
+        
         sensorDataFilter = eventAcceleration;
     }
 
-    // vec3 rotatedVec = vec3(sensorDataFilter.x, sensorDataFilter.z, sensorDataFilter.y);
     vec3 rotatedVec = vec3(sensorDataFilter.z, sensorDataFilter.x, -sensorDataFilter.y);
 
     mat3 cameraZrotate = rotate(mat4(1.0f), Render::getInstance().getCameraZAngle(), vec3(0, 0, 1));
