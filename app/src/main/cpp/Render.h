@@ -68,6 +68,9 @@ public:
 
     void setOutputWindow(ANativeWindow* window);
 
+    float getCameraXAngle();
+    float getCameraZAngle();
+
     void draw();
 };
 

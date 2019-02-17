@@ -26,12 +26,17 @@ private:
     int initialized;
 
     AAssetManager* nativeManager;
+
+    string externalFilesDir;
 public:
-    void initialize(AAssetManager* nativeManager);
+    void initialize(AAssetManager* nativeManager, string externalFilesDir);
     void finalize();
 
     string loadTextAsset(string assertName);
     GLuint loadTextureAsset(string assertName);
+
+    bool loadExternalBinaryFile(string fileName, void* dest, unsigned int size);
+    void saveExternalBinaryFile(string fileName, void* src, unsigned int size);
 };
 
 #endif //PHYSICSTEST_ASSET_MANAGER_H

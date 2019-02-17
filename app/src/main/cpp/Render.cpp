@@ -377,3 +377,11 @@ void Render::draw() {
 
     eglSwapBuffers(display, surface);
 }
+
+float Render::getCameraXAngle() {
+    return this->cameraAngleX;
+}
+
+float Render::getCameraZAngle() {
+    return this->cameraAngleZ;
+}

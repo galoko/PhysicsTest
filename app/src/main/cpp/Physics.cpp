@@ -6,6 +6,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "AssetManager.h"
+
 #define PHYSICS_TAG "PT_PHYSICS"
 
 Physics::Physics() {
@@ -17,7 +19,7 @@ void Physics::initialize() {
     if (this->initialized == 1)
         return;
 
-    this->gravity = normalize(vec3(0, 0, 1)) * -9.8f;
+    this->gravity = normalize(vec3(0, 0, 0)) * 9.8f;
 
     mat3 rotation = rotate(mat4(1.f), radians(0.0f), normalize(vec3(0, 1, 0)));
 
@@ -26,7 +28,33 @@ void Physics::initialize() {
 
     this->cubePhysics = new PhysicsData(this->cube, this->walls, 1.0f);
 
+    loadSimulationState();
+
     this->initialized = 1;
+}
+
+void Physics::loadSimulationState() {
+
+    SerializedScene scene;
+    if (!AssetManager::getInstance().loadExternalBinaryFile(STATE_FILE_NAME, &scene, sizeof(scene)))
+        return;
+
+    this->cube->loadFromState(scene.cubeState);
+    this->cubePhysics->loadFromState(scene.cubePhysicsState);
+
+    setGravity(scene.gravity);
+}
+
+void Physics::saveSimulationState() {
+
+    SerializedScene scene = { };
+
+    scene.gravity = this->gravity;
+
+    this->cube->saveToState(&scene.cubeState);
+    this->cubePhysics->saveToState(&scene.cubePhysicsState);
+
+    AssetManager::getInstance().saveExternalBinaryFile(STATE_FILE_NAME, &scene, sizeof(scene));
 }
 
 const Cube* Physics::getCube() {
@@ -38,13 +66,24 @@ const Cube* Physics::getWalls() {
 }
 
 void Physics::setGravity(vec3 gravity) {
-    // this->gravity = gravity;
+    this->gravity = gravity;
 }
 
 void Physics::finalize() {
 
     if (this->initialized == 0)
         return;
+
+    saveSimulationState();
+
+    delete this->cubePhysics;
+    this->cubePhysics = nullptr;
+
+    delete this->cube;
+    this->cube = nullptr;
+
+    delete this->walls;
+    this->walls = nullptr;
 
     this->initialized = 0;
 }
@@ -94,6 +133,12 @@ PhysicsData::PhysicsData(Cube* cube, Cube* walls, float mass) {
     updateInertiaTensor();
 }
 
+void PhysicsData::integrateTransforms(vec3 positionDelta, vec3 rotationDelta) {
+
+    this->cube->integrateTransforms(positionDelta, rotationDelta);
+    this->updateInertiaTensor();
+}
+
 void PhysicsData::updateInertiaTensor() {
 
     mat3 rotation = cube->getRotation();
@@ -105,28 +150,8 @@ void PhysicsData::applyGravity(vec3 gravity, double dt) {
     this->linearVelocity += gravity * (float)dt;
 }
 
-quat mulVandQ(vec3 w, quat q) {
-
-    return quat(
-            -w.x * q.x - w.y * q.y - w.z * q.z,
-            +w.x * q.w + w.y * q.z - w.z * q.y,
-            +w.y * q.w + w.z * q.x - w.x * q.z,
-            +w.z * q.w + w.x * q.y - w.y * q.x);
-}
-
 void PhysicsData::applyPseudoImpulse(vec3 impulse, vec3 localPoint) {
-    this->cube->position += this->invMass * impulse;
-
-    vec3 angularVelocityDelta = this->worldInvInertiaTensor * cross(localPoint, impulse);
-
-    quat rotation = quat_cast(this->cube->rotation);
-    rotation += mulVandQ(angularVelocityDelta, rotation) * 0.5f;
-    quat q = angularVelocityDelta * rotation;
-    this->cube->rotation = mat3_cast(normalize(rotation));
-
-    this->updateInertiaTensor();
-
-    this->cube->calcPoints();
+    this->integrateTransforms(this->invMass * impulse, this->worldInvInertiaTensor * cross(localPoint, impulse));
 }
 
 void PhysicsData::applyImpulse(vec3 impulse, vec3 localPoint) {
@@ -170,8 +195,8 @@ void PhysicsData::processCollisions() {
 
             vec3 pointError = normal *
                               (
-                                      min(dot(point - leftBottomNear, normal), 0.0f) +
-                                      max(dot(point - rightTopFar, normal), 0.0f)
+                                      glm::min(dot(point - leftBottomNear, normal), 0.0f) +
+                                      glm::max(dot(point - rightTopFar, normal), 0.0f)
                               );
 
             if (!isZeroVec(pointError)) {
@@ -230,17 +255,7 @@ void PhysicsData::processCollisions() {
 }
 
 void PhysicsData::integrate(double dt) {
-
-    this->cube->position += this->linearVelocity * (float)dt;
-
-    quat rotation = quat_cast(this->cube->rotation);
-    quat rotationDelta = mulVandQ(this->angularVelocity, rotation) * (float(dt) * 0.5f);
-    rotation += rotationDelta;
-    this->cube->rotation = mat3_cast(normalize(rotation));
-
-    this->updateInertiaTensor();
-
-    this->cube->calcPoints();
+    this->integrateTransforms(this->linearVelocity * (float)dt, this->angularVelocity * (float)dt);
 }
 
 void PhysicsData::applyDamping(double dt, float damping) {
@@ -249,6 +264,14 @@ void PhysicsData::applyDamping(double dt, float damping) {
 
     this->linearVelocity *= m;
     this->angularVelocity *= m;
+}
+
+void PhysicsData::loadFromState(SerializedPhysics state) {
+
+}
+
+void PhysicsData::saveToState(SerializedPhysics* state) {
+
 }
 
 // Cube
@@ -299,4 +322,28 @@ const vec3 Cube::getLeftBottomNear() const {
 
 const vec3 Cube::getRightTopFar() const {
     return position + size * 0.5f;
+}
+
+void Cube::integrateTransforms(vec3 positionDelta, vec3 rotationDelta) {
+
+    this->position += positionDelta;
+
+    quat rotation = quat_cast(this->getRotation());
+    quat rotationDeltaQ = quat(0, rotationDelta.x, rotationDelta.y, rotationDelta.z);
+    rotation += (rotationDeltaQ * rotation) * 0.5f;
+
+    this->rotation = mat3_cast(normalize(rotation));
+
+    this->calcPoints();
+}
+
+void Cube::loadFromState(SerializedCube state) {
+    this->position = state.position;
+    this->rotation = state.rotation;
+    this->calcPoints();
+}
+
+void Cube::saveToState(SerializedCube* state) {
+    state->position = this->position;
+    state->rotation = this->rotation;
 }

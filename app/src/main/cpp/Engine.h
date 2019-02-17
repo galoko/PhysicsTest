@@ -8,7 +8,10 @@
 
 #include "readerwriterqueue.h"
 
+#include <string>
+
 using namespace moodycamel;
+using namespace std;
 
 class Engine {
 public:
@@ -38,6 +41,7 @@ private:
 
     struct InitStruct {
         AAssetManager* nativeAssetManager;
+        string externalFilesDir;
     };
 
     BlockingReaderWriterQueue<EngineEvent> eventQueue;
@@ -63,7 +67,7 @@ public:
 
     // all these methods should be called from single thread
 
-    void initialize(AAssetManager* nativeAssetManager);
+    void initialize(AAssetManager* nativeAssetManager, string externalFilesDir);
     void finalize();
 
     void start();

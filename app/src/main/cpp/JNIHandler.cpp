@@ -13,13 +13,21 @@
 
 #include "Engine.h"
 
+#include <string>
+
+using namespace std;
+
 extern "C" JNIEXPORT void JNICALL Java_com_example_physicstest_JNIHandler_init(
-        JNIEnv *env, jclass /*this*/, jobject assetManager) {
+        JNIEnv *env, jclass /*this*/, jobject assetManager, jstring externalFilesDir) {
     try {
         COFFEE_TRY() {
             AAssetManager* nativeAssetManager = AAssetManager_fromJava(env, assetManager);
+            const char* externalFilesDirChars = env->GetStringUTFChars(externalFilesDir, JNI_FALSE);
+            string externalFilesDirStr = string(externalFilesDirChars);
+            env->ReleaseStringUTFChars(externalFilesDir, externalFilesDirChars);
 
-            Engine::getInstance().initialize(nativeAssetManager);
+            Engine::getInstance().initialize(nativeAssetManager, externalFilesDirStr);
+
         } COFFEE_CATCH() {
             coffeecatch_throw_exception(env);
         } COFFEE_END();

@@ -12,12 +12,13 @@ AssetManager::AssetManager() {
 
 }
 
-void AssetManager::initialize(AAssetManager* nativeManager) {
+void AssetManager::initialize(AAssetManager* nativeManager, string externalFilesDir) {
 
     if (this->initialized == 1)
         return;
 
     this->nativeManager = nativeManager;
+    this->externalFilesDir = externalFilesDir;
 
     this->initialized = 1;
 }
@@ -85,4 +86,40 @@ GLuint AssetManager::loadTextureAsset(string assertName) {
     AAsset_close(asset);
 
     return textureID;
+}
+
+bool AssetManager::loadExternalBinaryFile(string fileName, void* dest, unsigned int size) {
+
+    string fullFileName = this->externalFilesDir + "/" + fileName;
+
+    bool result = false;
+
+    FILE* fileHandle = fopen(fullFileName.c_str(), "rb");
+    if (fileHandle != nullptr) {
+
+        size_t readed = fread(dest, 1, size, fileHandle);
+        if (readed == size)
+            result = true;
+
+        fclose(fileHandle);
+        fileHandle = nullptr;
+    }
+
+    return result;
+}
+
+void AssetManager::saveExternalBinaryFile(string fileName, void* src, unsigned int size) {
+
+    string fullFileName = this->externalFilesDir + "/" + fileName;
+
+    bool result = false;
+
+    FILE* fileHandle = fopen(fullFileName.c_str(), "w");
+    if (fileHandle != nullptr) {
+
+        size_t written = fwrite(src, 1, size, fileHandle);
+
+        fclose(fileHandle);
+        fileHandle = nullptr;
+    }
 }

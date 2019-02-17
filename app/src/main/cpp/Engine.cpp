@@ -20,7 +20,7 @@ Engine::Engine() : eventQueue(30) {
 
 }
 
-void Engine::initialize(AAssetManager* nativeAssetManager) {
+void Engine::initialize(AAssetManager* nativeAssetManager, string externalFilesDir) {
 
     if (this->initialized == 1)
         return;
@@ -32,6 +32,7 @@ void Engine::initialize(AAssetManager* nativeAssetManager) {
 
     auto initStruct = new InitStruct();
     initStruct->nativeAssetManager = nativeAssetManager;
+    initStruct->externalFilesDir = externalFilesDir;
 
     pushEvent(Initialize, (void*)initStruct);
 
@@ -141,7 +142,7 @@ void Engine::processEvent(EngineEvent& event) {
 
             InitStruct* initStruct = (InitStruct*)event.param;
 
-            AssetManager::getInstance().initialize(initStruct->nativeAssetManager);
+            AssetManager::getInstance().initialize(initStruct->nativeAssetManager, initStruct->externalFilesDir);
             Physics::getInstance().initialize();
             Render::getInstance().initialize();
             InputManager::getInstance().initialize();

@@ -43,7 +43,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback {
     @Override
     protected void onStart() {
         super.onStart();
-        JNIHandler.init(assetManager);
+        JNIHandler.init(assetManager, getExternalFilesDir(null).getAbsolutePath());
     }
 
     @Override
