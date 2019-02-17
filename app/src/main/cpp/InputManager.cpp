@@ -63,7 +63,7 @@ void InputManager::applyUserInput() {
     float a = SENSOR_FILTER_ALPHA;
     while (ASensorEventQueue_getEvents(accelerometerEventQueue, &event, 1) > 0) {
         vec3 eventAcceleration = vec3(event.acceleration.x, event.acceleration.y, event.acceleration.z);
-        
+
         sensorDataFilter = eventAcceleration;
     }
 
