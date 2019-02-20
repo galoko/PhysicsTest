@@ -19,7 +19,7 @@ void Physics::initialize() {
     if (this->initialized == 1)
         return;
 
-    this->gravity = normalize(vec3(0, 0, 0)) * 9.8f;
+    this->gravity = normalize(vec3(0, 0, -1)) * 9.8f;
 
     mat3 rotation = rotate(mat4(1.f), radians(0.0f), normalize(vec3(0, 1, 0)));
 
@@ -49,7 +49,7 @@ void Physics::saveSimulationState() {
 
     SerializedScene scene = { };
 
-    scene.gravity = this->gravity;
+    scene.gravity = getGravity();
 
     this->cube->saveToState(&scene.cubeState);
     this->cubePhysics->saveToState(&scene.cubePhysicsState);
@@ -67,6 +67,10 @@ const Cube* Physics::getWalls() {
 
 void Physics::setGravity(vec3 gravity) {
     this->gravity = gravity;
+}
+
+vec3 Physics::getGravity() {
+    return this->gravity;
 }
 
 void Physics::finalize() {
@@ -128,6 +132,8 @@ PhysicsData::PhysicsData(Cube* cube, Cube* walls, float mass) {
         mass / 12.0f * (sizeSq.x + sizeSq.y)
     };
 
+    // inertia *= 0.5f;
+
     this->localInvInertiaTensor = scale(mat4(1.0f), 1.0f / inertia);
 
     updateInertiaTensor();
@@ -169,8 +175,8 @@ void PhysicsData::processCollisions() {
     vec3 leftBottomNear = walls->getLeftBottomNear();
     vec3 rightTopFar = walls->getRightTopFar();
 
-    vec3 error, errorPointSum;
-    unsigned int errorPointCount;
+    vec3 errorPointSum;
+    float errorSum, errorMin;
 
     const unsigned int normalCount = 3;
     const vec3 normals[normalCount] = {
@@ -184,72 +190,74 @@ void PhysicsData::processCollisions() {
 
         vec3 normal = normals[normalIndex];
 
-        error = {0, 0, 0};
         errorPointSum = {0, 0, 0};
-        errorPointCount = 0;
+        errorSum = 0;
+        errorMin = 0;
 
         for (unsigned int pointIndex = 0; pointIndex < Cube::POINTS_COUNT; pointIndex++) {
 
             vec3 point = points[pointIndex];
 
+            float errorDist = glm::min(dot(point - leftBottomNear, normal), 0.0f) +
+                          glm::max(dot(point - rightTopFar, normal), 0.0f);
 
-            vec3 pointError = normal *
-                              (
-                                      glm::min(dot(point - leftBottomNear, normal), 0.0f) +
-                                      glm::max(dot(point - rightTopFar, normal), 0.0f)
-                              );
-
-            if (!isZeroVec(pointError)) {
-                error += pointError;
-                errorPointSum += point;
-                errorPointCount++;
+            if (fabs(errorDist) > 0) {
+                errorSum += errorDist;
+                errorPointSum += point * errorDist;
+                errorMin = std::max(fabs(errorMin), fabs(errorDist)) * sign(errorDist);
             }
         }
 
-        if (errorPointCount > 0) {
+        if (fabs(errorSum) > 0) {
 
             vec3 errorNormal = normal;
-            if (!isZeroVec(errorNormal)) {
-                vec3 errorPoint = errorPointSum / (float) errorPointCount;
 
-                vec3 linearVelocityAtPoint, velocityErrorCorrection, temp, impulse;
+            vec3 errorPoint = errorPointSum / errorSum;
 
-                vec3 localErrorPoint = errorPoint - this->cube->getPosition();
+            vec3 linearVelocityAtPoint, velocityErrorCorrection, temp, impulse;
 
-                // normal impulse
-                linearVelocityAtPoint = this->linearVelocity + cross(this->angularVelocity, localErrorPoint);
-                velocityErrorCorrection =
-                        (-(1.0f + RESTITUTION)) * (dot(linearVelocityAtPoint, errorNormal) * errorNormal);
-                temp = this->worldInvInertiaTensor * cross(localErrorPoint, errorNormal);
+            vec3 localErrorPoint = errorPoint - this->cube->getPosition();
 
-                impulse = (velocityErrorCorrection) /
-                          (this->invMass + dot(errorNormal, cross(temp, localErrorPoint)));
-                applyImpulse(impulse, localErrorPoint);
-
-                // tangent impulse
-                linearVelocityAtPoint = this->linearVelocity + cross(this->angularVelocity, localErrorPoint);
-                vec3 c = cross(errorNormal, linearVelocityAtPoint);
-                if (!isZeroVec(c)) {
-                    vec3 errorTangent = normalize(cross(c, errorNormal));
-                    if (!isZeroVec(errorTangent)) {
-                        velocityErrorCorrection =
-                                (-(0.0f + FRICTION)) * (dot(linearVelocityAtPoint, errorTangent) * errorTangent);
-                        temp = this->worldInvInertiaTensor * cross(localErrorPoint, errorTangent);
-                        impulse = velocityErrorCorrection /
-                                  (this->invMass + dot(errorTangent, cross(temp, localErrorPoint)));
-                        applyImpulse(impulse, localErrorPoint);
-                    }
+            // tangent impulse
+            linearVelocityAtPoint =
+                    this->linearVelocity + cross(this->angularVelocity, localErrorPoint);
+            vec3 c = cross(errorNormal, linearVelocityAtPoint);
+            if (!isZeroVec(c)) {
+                vec3 errorTangent = normalize(cross(c, errorNormal));
+                if (!isZeroVec(errorTangent)) {
+                    velocityErrorCorrection =
+                            (-(0.0f + FRICTION)) *
+                            (dot(linearVelocityAtPoint, errorTangent) * errorTangent);
+                    temp = this->worldInvInertiaTensor * cross(localErrorPoint, errorTangent);
+                    impulse = velocityErrorCorrection /
+                              (this->invMass + dot(errorTangent, cross(temp, localErrorPoint)));
+                    applyImpulse(impulse, localErrorPoint);
                 }
-
-                // normal error correction
-                linearVelocityAtPoint = this->linearVelocity + cross(this->angularVelocity, localErrorPoint);
-                velocityErrorCorrection = -(error * 0.1f / (float) errorPointCount);
-                temp = this->worldInvInertiaTensor * cross(localErrorPoint, errorNormal);
-
-                impulse = velocityErrorCorrection /
-                          (this->invMass + dot(errorNormal, cross(temp, localErrorPoint)));
-                applyPseudoImpulse(impulse, localErrorPoint);
             }
+
+            // normal impulse
+            linearVelocityAtPoint =
+                    this->linearVelocity + cross(this->angularVelocity, localErrorPoint);
+            velocityErrorCorrection =
+                    (-(1.0f + RESTITUTION)) *
+                    (dot(linearVelocityAtPoint, errorNormal) * errorNormal);
+            temp = this->worldInvInertiaTensor * cross(localErrorPoint, errorNormal);
+
+            impulse = (velocityErrorCorrection) /
+                      (this->invMass + dot(errorNormal, cross(temp, localErrorPoint)));
+            applyImpulse(impulse, localErrorPoint);
+
+            vec3 error = errorNormal * errorMin;
+
+            // normal error correction
+            linearVelocityAtPoint =
+                    this->linearVelocity + cross(this->angularVelocity, localErrorPoint);
+            velocityErrorCorrection = -(error * 0.1f);
+            temp = this->worldInvInertiaTensor * cross(localErrorPoint, errorNormal);
+
+            impulse = velocityErrorCorrection /
+                      (this->invMass + dot(errorNormal, cross(temp, localErrorPoint)));
+            applyPseudoImpulse(impulse, localErrorPoint);
         }
     }
 }

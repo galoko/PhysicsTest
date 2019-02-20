@@ -217,7 +217,7 @@ void Render::initializeGL() {
 
     // vertices
 
-    float vertices[6 * 3 * 2 * (3 + 3 + 2)] =
+    float vertices[(6 * 3 * 2 * (3 + 3 + 2)) * 2] =
     {
         -0.50f,  0.50f,  0.50f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
          0.50f,  0.50f, -0.50f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,
@@ -254,7 +254,44 @@ void Render::initializeGL() {
         -0.50f,  0.50f, -0.50f,  0.0f,  0.0f, -1.0f,  0.0f,  1.0f,
          0.50f,  0.50f,  0.50f,  0.0f,  0.0f,  1.0f,  1.0f,  0.0f,
         -0.50f,  0.50f,  0.50f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
-        -0.50f, -0.50f,  0.50f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f
+        -0.50f, -0.50f,  0.50f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f,
+		
+        -0.50f,  0.50f,  0.50f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
+         0.50f,  0.50f, -0.50f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
+        -0.50f,  0.50f, -0.50f,  0.0f, -1.0f,  0.0f,  0.0f,  0.0f,
+         0.50f,  0.50f,  0.50f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+         0.50f, -0.50f, -0.50f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+         0.50f,  0.50f, -0.50f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
+         0.50f, -0.50f,  0.50f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
+        -0.50f, -0.50f, -0.50f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,
+         0.50f, -0.50f, -0.50f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
+        -0.50f, -0.50f,  0.50f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+        -0.50f,  0.50f, -0.50f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+        -0.50f, -0.50f, -0.50f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
+         0.50f, -0.50f, -0.50f,  0.0f,  0.0f,  1.0f,  1.0f,  0.0f,
+        -0.50f,  0.50f, -0.50f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f,
+         0.50f,  0.50f, -0.50f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
+         0.50f,  0.50f,  0.50f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f,
+        -0.50f, -0.50f,  0.50f,  0.0f,  0.0f, -1.0f,  0.0f,  1.0f,
+         0.50f, -0.50f,  0.50f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
+        -0.50f,  0.50f,  0.50f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
+         0.50f,  0.50f,  0.50f,  0.0f, -1.0f,  0.0f,  1.0f,  1.0f,
+         0.50f,  0.50f, -0.50f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
+         0.50f,  0.50f,  0.50f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+         0.50f, -0.50f,  0.50f, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
+         0.50f, -0.50f, -0.50f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+         0.50f, -0.50f,  0.50f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
+        -0.50f, -0.50f,  0.50f,  0.0f,  1.0f,  0.0f,  1.0f,  1.0f,
+        -0.50f, -0.50f, -0.50f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,
+        -0.50f, -0.50f,  0.50f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+        -0.50f,  0.50f,  0.50f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
+        -0.50f,  0.50f, -0.50f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+         0.50f, -0.50f, -0.50f,  0.0f,  0.0f,  1.0f,  1.0f,  0.0f,
+        -0.50f, -0.50f, -0.50f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
+        -0.50f,  0.50f, -0.50f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f,
+         0.50f,  0.50f,  0.50f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f,
+        -0.50f,  0.50f,  0.50f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
+        -0.50f, -0.50f,  0.50f,  0.0f,  0.0f, -1.0f,  0.0f,  1.0f
     };
 
     glGenBuffers(1, &cubeBuffer);
@@ -282,7 +319,7 @@ void Render::initializeGL() {
     updateProjectionMatrix();
 
     cameraPosition = { 2, 2, 2 };
-    lookAtPoint({ 0, 0, 0 });
+
     updateViewMatrix();
 }
 
@@ -328,8 +365,6 @@ void Render::updateViewMatrix() {
     direction.y = cameraAngleXsin * cameraAngleZcos;
     direction.z = cameraAngleXcos;
 
-    const vec3 up = { 0, 0, 1 };
-
     view = lookAt(cameraPosition, cameraPosition + direction, up);
 
     glUniformMatrix4fv(viewID, 1, GL_FALSE, value_ptr(view));
@@ -347,16 +382,40 @@ void Render::lookAtPoint(const vec3 point) {
     updateViewMatrix();
 }
 
-void Render::drawCube(const Cube* cube, GLuint tex, GLenum cullMode) {
+void Render::drawCube(const vec3 origin, const mat3 rotation, const vec3 size, GLuint tex, GLenum cullMode) {
 
     glBindTexture(GL_TEXTURE_2D, tex);
     glCullFace(cullMode);
 
-    glUniform3fv(translationID, 1, value_ptr(cube->getPosition()));
-    glUniformMatrix3fv(rotationID, 1, GL_FALSE, value_ptr(cube->getRotation()));
-    glUniform3fv(sizeID, 1, value_ptr(cube->getSize()));
+    glUniform3fv(translationID, 1, value_ptr(origin));
+    glUniformMatrix3fv(rotationID, 1, GL_FALSE, value_ptr(rotation));
+    glUniform3fv(sizeID, 1, value_ptr(size));
 
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+    if (cullMode == GL_BACK)
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+    else
+        glDrawArrays(GL_TRIANGLES, 36, 36);
+}
+
+void Render::drawCube(const Cube* cube, GLuint tex, GLenum cullMode) {
+    drawCube(cube->getPosition(), cube->getRotation(), cube->getSize(), tex, cullMode);
+}
+
+void Render::drawLine(vec3 origin, vec3 delta, GLuint tex, GLenum cullMode) {
+
+    float len = length(delta);
+    vec3 normal = delta / len;
+
+    vec3 axis = cross(normal, up);
+    if (length(axis) < 10e-10)
+        axis = { 1, 0, 0 };
+
+    float angle = -acos(dot(normal, up));
+    mat3 rotation = rotate(mat4(1.0f), angle, axis);
+
+    vec3 size = vec3(0.1f, 0.1f, len);
+
+    drawCube(origin + delta * 0.5f, rotation, size, tex, cullMode);
 }
 
 void Render::draw() {
@@ -372,6 +431,11 @@ void Render::draw() {
     drawCube(Physics::getInstance().getWalls(), wallTexture, GL_FRONT);
 
     drawCube(Physics::getInstance().getCube(), cubeTexture, GL_BACK);
+
+    /*
+    drawLine(Physics::getInstance().getCube()->getPosition(), Physics::getInstance().getGravity() * 0.1f,
+            cubeTexture, GL_BACK);
+    */
 
     // glFlush(); // do we need this or what?
 

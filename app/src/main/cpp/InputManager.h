@@ -27,8 +27,6 @@ private:
     vec3 sensorDataFilter;
 
     ASensorEventQueue *accelerometerEventQueue;
-
-    mat3 sensorRotation;
 public:
     InputManager();
 

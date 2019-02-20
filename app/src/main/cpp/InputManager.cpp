@@ -39,8 +39,6 @@ void InputManager::initialize() {
     status = ASensorEventQueue_setEventRate(accelerometerEventQueue, accelerometer, SENSOR_REFRESH_PERIOD_US);
     my_assert(status >= 0);
 
-    this->sensorRotation = rotate(rotate(mat4(1.0f), radians(180.0f), vec3(0, 0, 1)), radians(90.0f), vec3(1, 0, 0));
-
     this->initialized = 1;
 
     print_log(ANDROID_LOG_INFO, INPUT_MANAGER_TAG, "Input manager is initialized");
@@ -67,13 +65,22 @@ void InputManager::applyUserInput() {
         sensorDataFilter = eventAcceleration;
     }
 
-    vec3 rotatedVec = vec3(sensorDataFilter.z, sensorDataFilter.x, -sensorDataFilter.y);
+    vec3 rotatedVec = vec3(-sensorDataFilter.x, sensorDataFilter.z, -sensorDataFilter.y);
 
-    mat3 cameraZrotate = rotate(mat4(1.0f), Render::getInstance().getCameraZAngle(), vec3(0, 0, 1));
+    // print_log(ANDROID_LOG_INFO, INPUT_MANAGER_TAG, "%f %f %f", rotatedVec.x, rotatedVec.y, rotatedVec.z);
+
+    /*
+    rotatedVec.y = (std::min(std::max(rotatedVec.y, 0.0f), 9.8f) - 4.9f) * 2.5f;
+    if (fabs(rotatedVec.y) < 3.5f)
+        rotatedVec.y = 0.0f;
+    rotatedVec.x = std::min(std::max(rotatedVec.x * 2.0f, -9.8f), 9.8f);
+     */
+
+    mat3 cameraZrotate = rotate(mat4(1.0f), Render::getInstance().getCameraZAngle(), vec3(0, 0, -1));
 
     rotatedVec = cameraZrotate * rotatedVec;
 
-    print_log(ANDROID_LOG_INFO, INPUT_MANAGER_TAG, "%f %f %f", rotatedVec.x, rotatedVec.y, rotatedVec.z);
+    // print_log(ANDROID_LOG_INFO, INPUT_MANAGER_TAG, "%f %f %f", rotatedVec.x, rotatedVec.y, rotatedVec.z);
 
     Physics::getInstance().setGravity(rotatedVec);
 }

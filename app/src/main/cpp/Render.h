@@ -53,6 +53,8 @@ private:
     vec3 cameraPosition;
     float cameraAngleX, cameraAngleZ;
 
+    const vec3 up = { 0, 0, 1 };
+
     void initializeGL();
     void finalizeGL();
 
@@ -61,7 +63,9 @@ private:
 
     void lookAtPoint(const vec3 point);
 
+    void drawCube(const vec3 origin, const mat3 rotation, const vec3 size, GLuint tex, GLenum cullMode);
     void drawCube(const Cube* cube, GLuint tex, GLenum cullMode);
+    void drawLine(vec3 origin, vec3 delta, GLuint tex, GLenum cullMode);
 public:
     void initialize();
     void finalize();

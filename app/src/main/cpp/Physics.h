@@ -117,6 +117,7 @@ public:
     const Cube* getCube();
     const Cube* getWalls();
 
+    vec3 getGravity();
     void setGravity(vec3 gravity);
 
     void step(double dt);
